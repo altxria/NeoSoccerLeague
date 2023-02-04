@@ -1,0 +1,32 @@
+local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3')))()
+
+local w = library:CreateWindow("Altxria#7302") 
+
+local b = w:CreateFolder("Stuff")
+b:Toggle("TP Ball To You (Click)",function(bool)
+    shared.toggle = bool
+end)
+local children = game.Workspace:GetDescendants()
+local Players = game:GetService("Players");
+local plr = Players.LocalPlayer;
+local mouse = plr:GetMouse();
+mouse.Button1Down:Connect(function()
+if shared.toggle == true then
+for i, v in ipairs(game:GetService("Workspace"):GetChildren()) do
+        for t, k in ipairs(v:GetChildren()) do
+            if k.Name == "Balls" then
+                for o, p in ipairs(k:GetChildren()) do
+                    if p.Name == "PLAIN_BALL" then
+                        for m, n in ipairs(p:GetChildren()) do
+                            if n.Name == "HITBOX_BALL" then
+                                n.Transparency = 0
+                                n.Position = mouse.Hit.Position
+                            end
+                        end
+                    end
+                end
+            end
+        end
+end
+end
+end)
