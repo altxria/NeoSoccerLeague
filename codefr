@@ -11,11 +11,21 @@ local Tabs = {
     Main = Window:AddTab('Main'), 
     ['UI Settings'] = Window:AddTab('UI Settings'),
 }
+local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+MenuGroup:AddButton('Unload', function() Library:Unload() end)
 local LeftGroupBox = Tabs.Main:AddLeftGroupbox('AutoScore')
 LeftGroupBox:AddToggle('autoSBool', {
     Text = 'Turn On',
     Default = false, 
     Tooltip = 'As long as another player doesnt have possession, will auto score.',
+})
+LeftGroupBox:AddSlider('goalcount (NOT WORKING YET)', {
+    Text = 'Goalcount to leave',
+    Default = 0,
+    Min = 0,
+    Max = 50,
+    Rounding = 0,
+    Compact = false, 
 })
 local children = game.Workspace:GetDescendants()
 local Players = game:GetService("Players");
@@ -27,11 +37,15 @@ local poss = false
 local neutral = false
 local red = false 
 local blue = true
+local expand = false
 local score = 0
 local debounce = false
 local teamnum = 0
+local function dribbleExpander()
+    hitbox.Position = character.HumanoidRootPart.Position
+    hitbox.Size = Vector3.new(Options.Xbh.Value, Options.Ybh.Value, Options.Zbh.Value)
+end 
 local function baller()
-
 if Toggles.autoSBool.Value == true then
     for i, v in ipairs(game:GetService("Workspace"):GetChildren()) do
         for z,x in ipairs (head:GetChildren()) do
@@ -92,5 +106,16 @@ if Toggles.autoSBool.Value == true then
     end
 end
 end
-game:GetService("RunService"):BindToRenderStep("updateerrr", 1, baller)
-
+local asOn = false
+Toggles.autoSBool:OnChanged(function()
+    if Toggles.autoSBool.Value == true then
+        print(game.PlaceId)
+        if game.PlaceId ~= 9254845212 then
+            game:GetService("TeleportService"):Teleport(9254845212, plr) 
+        end
+        game:GetService("RunService"):BindToRenderStep("updateerrr", 1, baller)
+        asOn = true
+    elseif Toggles.autoSBool.Value == false and asOn == true then
+        game:GetService("RunService"):UnbindFromRenderStep("updateerrr")
+    end
+end)
