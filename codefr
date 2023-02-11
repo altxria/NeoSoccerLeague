@@ -19,11 +19,11 @@ LeftGroupBox:AddToggle('autoSBool', {
     Default = false, 
     Tooltip = 'As long as another player doesnt have possession, will auto score.',
 })
-LeftGroupBox:AddSlider('goalcount (NOT WORKING YET)', {
-    Text = 'Goalcount to leave',
+LeftGroupBox:AddSlider('goalcount', {
+    Text = 'Goalcount to leave (BOTH TEAMS)',
     Default = 0,
     Min = 0,
-    Max = 50,
+    Max = 100,
     Rounding = 0,
     Compact = false, 
 })
@@ -38,39 +38,46 @@ local neutral = false
 local red = false 
 local blue = true
 local expand = false
-local score = 0
 local debounce = false
 local teamnum = 0
-local function dribbleExpander()
-    hitbox.Position = character.HumanoidRootPart.Position
-    hitbox.Size = Vector3.new(Options.Xbh.Value, Options.Ybh.Value, Options.Zbh.Value)
-end 
+local bluescore = nil
+local redscore = nil
+local sbluescore = nil
+local sredscore = nil
+local newGameCooldown = false
 local function baller()
 if Toggles.autoSBool.Value == true then
     for i, v in ipairs(game:GetService("Workspace"):GetChildren()) do
         for z,x in ipairs (head:GetChildren()) do
             if x.Name == "OwnershipArrow" then
                 poss = true 
+                print("possesion check")
             end
         end
         for u,y in ipairs (character:GetChildren()) do
             if y.Name == "Team" then
                 if y.Value == "Red" then
                     red = true
+                    print("teamcheck red")
                 elseif y.Value == "Blue" then
                     blue = true
+                    print("teamcheck blue")
                 end
             end
         end
         for t, k in ipairs(v:GetChildren()) do
             if k.Name == "Balls" then
+                print("balls folder")
                 for o, p in ipairs(k:GetChildren()) do
                     if p.Name == "PLAIN_BALL" then
+                        print("found a ball")
                         for m, n in ipairs(p:GetChildren()) do
                             if n.Name == "HITBOX_BALL" then
+                                print("got hitbox")
                                 for z,x in ipairs (n:GetChildren()) do
                                     if x.Name == "OwnershipArrow" then
                                         neutral = true 
+                                        print("neutral ball")
                                     end
                                 end
                                 n.Transparency = 0
@@ -78,14 +85,22 @@ if Toggles.autoSBool.Value == true then
                                     if blue == true then
                                         n.Position = Vector3.new(133, 13, -895)
                                         if debounce == false then
-                                            score = score + 1
                                             debounce = true
+                                            sbluescore = plr.PlayerGui.GameUI.RoundInfo.Blue.Score.Text
+                                            sredscore = plr.PlayerGui.GameUI.RoundInfo.Red.Score.Text
+                                            bluescore = tonumber(sbluescore)
+                                            redscore = tonumber(sredscore)
+                                            print("teleported")
                                         end
                                     elseif red == true then
                                         n.Position = Vector3.new(790, 10, -895)
                                         if debounce == false then
-                                            score = score + 1
                                             debounce = true
+                                            sbluescore = plr.PlayerGui.GameUI.RoundInfo.Blue.Score.Text
+                                            sredscore = plr.PlayerGui.GameUI.RoundInfo.Red.Score.Text
+                                            bluescore = tonumber(sbluescore)
+                                            redscore = tonumber(sredscore)
+                                            print("teleported")
                                         end
                                     debounce = false
                                     end
@@ -94,6 +109,7 @@ if Toggles.autoSBool.Value == true then
                                 elseif neutral == true then
                                     n.Position = character.HumanoidRootPart.Position
                                     game:GetService("ReplicatedStorage").Remotes.Ball.Dribble:FireServer(game:GetService("Workspace").Objects.Balls.PLAIN_BALL)
+                                    print("gave player possesion")
                                 end
                                 neutral = false
                                 poss = false
@@ -104,18 +120,30 @@ if Toggles.autoSBool.Value == true then
             end
         end
     end
+    if game:GetService("ReplicatedStorage").Info.TimeLeft.Value == "00:05" then
+        game:GetService("RunService"):UnbindFromRenderStep("updateerrr")
+        newGameCooldown = true
+        Toggles.autoSBool.Value = false
+        print("quitting")
+    end
+    if redscore + bluescore >= Options.goalcount.Value then
+        print("goalc")
+    end
 end
 end
 local asOn = false
 Toggles.autoSBool:OnChanged(function()
-    if Toggles.autoSBool.Value == true then
+    if Toggles.autoSBool.Value == true and newGameCooldown == false then
         print(game.PlaceId)
         if game.PlaceId ~= 9254845212 then
-            game:GetService("TeleportService"):Teleport(9254845212, plr) 
+            
         end
         game:GetService("RunService"):BindToRenderStep("updateerrr", 1, baller)
         asOn = true
-    elseif Toggles.autoSBool.Value == false and asOn == true then
+    elseif Toggles.autoSBool.Value == false and asOn == true and newGameCooldown == false then
         game:GetService("RunService"):UnbindFromRenderStep("updateerrr")
+    elseif newGameCooldown == true then
+        wait(7)
+        newGameCooldown = false
     end
 end)
